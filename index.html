@@ -156,22 +156,37 @@
     document.getElementById('instructionBox').innerText = callout;
 
     // 3. CENTERING & POP-OUT WINDOW LOGIC
-    function launchDedicatedWindow() {
-      const w = 1180;
-      const h = 1500;
-      const left = Math.max(0, (window.screen.width - w) / 2);
-      const top = Math.max(0, (window.screen.height - h) / 2);
+   function launchDedicatedWindow() {
+  // 1. Get the maximum usable space on the current monitor
+  const screenW = window.screen.availWidth || window.screen.width;
+  const screenH = window.screen.availHeight || window.screen.height;
 
-      const features = `width=${w},height=${h},top=${top},left=${left},resizable=yes,scrollbars=yes,status=no,toolbar=no,menubar=no,location=no`;
-      const win = window.open(targetUrl, "SimWorkspaceWindow", features);
+  // 2. Set width (capped to screen width) and max out the available height
+  const w = Math.min(1180, screenW);
+  const h = screenH; // Uses 100% of the visible monitor height
 
-      if (win) {
-        win.focus();
-      } else {
-        // Fallback if the browser popup blocker interferes
-        window.open(targetUrl, "_blank");
-      }
+  // 3. Center horizontally and place at the very top of the screen
+  const left = Math.max(0, Math.round((screenW - w) / 2));
+  const top = 0;
+
+  const features = `width=${w},height=${h},top=${top},left=${left},resizable=yes,scrollbars=yes`;
+
+  // Tip: Close the previous popup if it's already open, or use "_blank" to ensure new sizes apply
+  const win = window.open(targetUrl, "SimWorkspaceWindow", features);
+
+  if (win) {
+    // If the window was already open from an earlier click, force it to resize
+    try {
+      win.resizeTo(w, h);
+      win.moveTo(left, top);
+    } catch (e) {
+      // Ignored if cross-origin policy restricts resizing an existing window
     }
+    win.focus();
+  } else {
+    window.open(targetUrl, "_blank");
+  }
+}
   </script>
 </body>
 </html>
